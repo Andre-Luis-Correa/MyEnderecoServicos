@@ -1,6 +1,7 @@
 package unioeste.geral.endereco.col;
 
 import unioeste.geral.endereco.bo.bairro.Bairro;
+import unioeste.geral.endereco.dao.BairroDAO;
 
 import java.sql.Connection;
 
@@ -17,8 +18,8 @@ public class BairroCOL {
 		return true;
 	}
 	
-	public static boolean bairroCadastrado(Bairro bairro, Connection conexao) throws Exception {
-		Bairro aux = BairroDAO.selectBairro(bairro.getId(), conexao);
+	public static boolean bairroCadastrado(Bairro bairro) throws Exception {
+		Bairro aux = BairroDAO.selectBairro(bairro.getId());
 		if(aux==null) return false;
 		return true;
 	}

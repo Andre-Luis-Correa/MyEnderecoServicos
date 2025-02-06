@@ -1,18 +1,11 @@
 package unioeste.geral.endereco.infra;
 
+import unioeste.geral.endereco.bo.endereco.Endereco;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import org.json.JSONTokener;
-import org.json.JSONObject;
-
-import irrf.geral.bo.endereco.Bairro;
-import irrf.geral.bo.endereco.Cidade;
-import irrf.geral.bo.endereco.Endereco;
-import irrf.geral.bo.endereco.Estado;
-import irrf.geral.bo.endereco.Logradouro;
 
 public class CepAPI {
 	static String web_service = "http://viacep.com.br/ws/";
@@ -23,7 +16,7 @@ public class CepAPI {
 		
 		URL url = new URL(str_url);
 		HttpURLConnection conexao = (HttpURLConnection) url.openConnection();
-		
+
 		if(conexao.getResponseCode()!=200) throw new Exception("Não foi possível conectar à API");
 		
 		BufferedReader resposta = new BufferedReader(new InputStreamReader((conexao.getInputStream())));
@@ -31,7 +24,7 @@ public class CepAPI {
 		JSONObject jobject = new JSONObject(tokener);
 		
 		if(jobject.has("erro")) throw new Exception("CEP inexistente");
-		
+
 		Endereco endereco = new Endereco();
 		Estado estado = new Estado();
 		Cidade cidade = new Cidade();

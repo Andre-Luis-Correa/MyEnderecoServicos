@@ -1,9 +1,9 @@
 package unioeste.geral.endereco.col;
 
-import java.sql.Connection;
+import unioeste.geral.endereco.bo.logradouro.Logradouro;
+import unioeste.geral.endereco.dao.LogradouroDAO;
 
-import irrf.geral.bo.endereco.Logradouro;
-import irrf.geral.endereco.dao.LogradouroDAO;
+import java.sql.Connection;
 
 public class LogradouroCOL {
 	public static boolean idValido(int id) {
@@ -18,8 +18,8 @@ public class LogradouroCOL {
 		return true;
 	}
 	
-	public static boolean logradouroCadastrado(Logradouro logradouro, Connection conexao) throws Exception {
-		Logradouro aux = LogradouroDAO.selectLogradouro(logradouro.getId(), conexao);
+	public static boolean logradouroCadastrado(Logradouro logradouro) throws Exception {
+		Logradouro aux = LogradouroDAO.selectLogradouro(logradouro.getId());
 		if(aux==null) return false;
 		return true;
 	}

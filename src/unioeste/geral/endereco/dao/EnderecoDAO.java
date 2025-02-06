@@ -1,15 +1,15 @@
 package unioeste.geral.endereco.dao;
 
+import unioeste.geral.endereco.bo.endereco.Endereco;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 
-import irrf.geral.bo.endereco.Endereco;
-
 public class EnderecoDAO {
 
-	public static Endereco selectEnderecoId (int id, Connection conexao) throws Exception {
+	public static Endereco selectEnderecoId (int id) throws Exception {
 
 		StringBuffer sql = new StringBuffer("SELECT endereço.CEP, endereço.id_cidade, ");
 		sql.append("endereço.id_bairro, endereço.id_logradouro FROM endereço ");
@@ -32,7 +32,7 @@ public class EnderecoDAO {
 		return null;
 	}
 	
-	public static Endereco selectEnderecoCEP (String CEP, Connection conexao) throws Exception {
+	public static Endereco selectEnderecoCEP (String CEP) throws Exception {
 		
 		StringBuffer sql = new StringBuffer("SELECT endereço.id_endereço, endereço.id_cidade, ");
 		sql.append("endereço.id_bairro, endereço.id_logradouro FROM endereço ");
@@ -55,8 +55,7 @@ public class EnderecoDAO {
 		return null;
 	}
 	
-	public static void insertEndereco (Endereco endereco, Connection conexao) throws Exception {
-		
+	public static void insertEndereco (Endereco endereco) throws Exception {
 		StringBuffer sql = new StringBuffer("INSERT INTO endereço (CEP, sigla_estado, id_cidade, id_bairro, id_logradouro) VALUES");
 		sql.append("(?, ?, ?, ?, ?);");
 		PreparedStatement cmd = conexao.prepareStatement(sql.toString());
