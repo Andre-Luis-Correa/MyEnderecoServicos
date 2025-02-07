@@ -10,7 +10,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../MyAddressBO/out/artifacts/MyEnderecoBO_jar/MyEnderecoBO.jar!/" />
+          <root url="jar://$MODULE_DIR$/../MyInfraAPI/out/artifacts/MyInfraAPI_jar/MyInfraAPI.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -19,7 +19,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../MyInfraAPI/out/artifacts/MyInfraAPI_jar/MyInfraAPI.jar!/" />
+          <root url="jar://$MODULE_DIR$/../MyAddressBO/out/artifacts/MyEnderecoBO_jar/MyEnderecoBO.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
