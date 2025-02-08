@@ -13,6 +13,10 @@ public class EnderecoCOL {
 		return endereco != null && EnderecoDAO.selectEnderecoPorCep(endereco.getCep()) != null;
 	}
 
+	public static boolean enderecoExiste(Endereco endereco) throws Exception {
+		return endereco != null && endereco.getId() != null && EnderecoDAO.selectEnderecoPorId(endereco.getId()) != null;
+	}
+
 	public static boolean cepValido(String cep) {
 		return cep != null && cep.matches("\\d{8}");
 	}
