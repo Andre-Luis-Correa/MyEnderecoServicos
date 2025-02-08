@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LogradouroDAO {
 
@@ -32,4 +34,25 @@ public class LogradouroDAO {
 
 		return null;
 	}
+
+    public static List<Logradouro> selectTodosLogradouros() throws Exception {
+		List<Logradouro> logradouroList = new ArrayList<>();
+		String sql = "SELECT * FROM logradouro;";
+
+		try (Connection conn = new ConexaoBD().getConexaoComBD();
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+			ResultSet rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				Logradouro logradouro = new Logradouro(rs.getLong("id_logradouro"), rs.getString("nome"), TipoLogradouroDAO.selectTipoLogradouroPorSigla(rs.getString("sigla_tipo_logradouro")));
+				logradouroList.add(logradouro);
+			}
+
+		} catch (Exception e) {
+			throw new Exception("Erro ao buscar Tipos de Logradouro", e);
+		}
+
+		return logradouroList;
+    }
 }

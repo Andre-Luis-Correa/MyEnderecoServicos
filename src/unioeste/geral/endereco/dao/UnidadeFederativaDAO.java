@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class UnidadeFederativaDAO {
@@ -30,4 +32,24 @@ public class UnidadeFederativaDAO {
 		return null;
 	}
 
+    public static List<UnidadeFederativa> selectTodasUnidadesFederativas() throws Exception {
+		List<UnidadeFederativa> unidadeFederativaList = new ArrayList<>();
+		String sql = "SELECT * FROM unidade_federativa;";
+
+		try (Connection conn = new ConexaoBD().getConexaoComBD();
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+			ResultSet rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				UnidadeFederativa unidadeFederativa = new UnidadeFederativa(rs.getString("sigla_uf"), rs.getString("nome_uf"));
+				unidadeFederativaList.add(unidadeFederativa);
+			}
+
+		} catch (Exception e) {
+			throw new Exception("Erro ao buscar Unidades Federativas", e);
+		}
+
+		return unidadeFederativaList;
+    }
 }

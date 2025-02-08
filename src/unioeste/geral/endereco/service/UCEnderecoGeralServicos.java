@@ -8,10 +8,11 @@ import unioeste.geral.endereco.bo.tipologradouro.TipoLogradouro;
 import unioeste.geral.endereco.bo.unidadefederativa.UnidadeFederativa;
 import unioeste.geral.endereco.col.CidadeCOL;
 import unioeste.geral.endereco.col.EnderecoCOL;
-import unioeste.geral.endereco.dao.CidadeDAO;
-import unioeste.geral.endereco.dao.EnderecoDAO;
+import unioeste.geral.endereco.dao.*;
 import unioeste.geral.endereco.exception.EnderecoException;
 import unioeste.geral.endereco.infra.CepAPI;
+
+import java.util.List;
 
 public class UCEnderecoGeralServicos {
 
@@ -84,7 +85,27 @@ public class UCEnderecoGeralServicos {
         return cidade;
     }
 
-    public static void main(String[] args) {
+    public static List<UnidadeFederativa> obterListaDeUnidadesFederativas() throws Exception {
+        return UnidadeFederativaDAO.selectTodasUnidadesFederativas();
+    }
+
+    public static List<Cidade> obterListaDeCidades() throws Exception {
+        return CidadeDAO.selectTodasCidades();
+    }
+
+    public static List<Bairro> obterListaDeBairros() throws Exception {
+        return BairroDAO.selectTodosBairros();
+    }
+
+    public static List<Logradouro> obterListaDeLogradouros() throws Exception {
+        return LogradouroDAO.selectTodosLogradouros();
+    }
+
+    public static List<TipoLogradouro> obterListaDeTipoLogradouros() throws Exception {
+        return TipoLogradouroDAO.selectTodosTiposLogradouro();
+    }
+
+    public static void main(String[] args) throws Exception {
         try {
             // Criando objetos necessários
             UnidadeFederativa uf = new UnidadeFederativa("PR", "Paraná");
@@ -122,5 +143,26 @@ public class UCEnderecoGeralServicos {
         } catch (Exception e) {
             System.err.println("Erro: " + e.getMessage());
         }
+
+        for(UnidadeFederativa unidadeFederativa : obterListaDeUnidadesFederativas()) {
+            System.out.println(unidadeFederativa.getSigla());
+        }
+        System.out.println(" - ");
+        for(Cidade cidade : obterListaDeCidades()) {
+            System.out.println(cidade.getNome());
+        }
+        System.out.println(" - ");
+        for(Logradouro logradouro : obterListaDeLogradouros()) {
+            System.out.println(logradouro.getNome());
+        }
+        System.out.println(" - ");
+        for(TipoLogradouro tipoLogradouro : obterListaDeTipoLogradouros()) {
+            System.out.println(tipoLogradouro.getSigla());
+        }
+        System.out.println(" - ");
+        for(Bairro bairro : obterListaDeBairros()) {
+            System.out.println(bairro.getNome());
+        }
     }
+
 }
