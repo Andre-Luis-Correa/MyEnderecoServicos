@@ -95,13 +95,13 @@ public class UCEnderecoGeralServicos {
 
             Endereco endereco = new Endereco(1L, "85875000", cidade, logradouro, bairro);
 
-            // Teste cadastrarEndereco
-            System.out.println("Testando cadastrarEndereco...");
-            cadastrarEndereco(endereco);
+//            // Teste cadastrarEndereco
+//            System.out.println("Testando cadastrarEndereco...");
+//            cadastrarEndereco(endereco);
 
             // Teste obterEnderecoPorCep
             System.out.println("Testando obterEnderecoPorCep...");
-            Endereco e1 = obterEnderecoPorCep("85800000");
+            Endereco e1 = obterEnderecoPorCep("80000000");
             System.out.println("Endereço obtido: " + e1.getCep());
 
             // Teste obterEnderecoPorId
