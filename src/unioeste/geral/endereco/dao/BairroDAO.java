@@ -11,15 +11,15 @@ import java.sql.SQLException;
 public class BairroDAO {
 
 	public static Bairro selectBairroPorId(Long id) throws Exception {
-		String sql = "SELECT nome_bairro FROM bairro WHERE id_bairro = ?";
+		String sql = "SELECT nome FROM bairro WHERE id_bairro = ?";
 
-		try (Connection conexaoBD = new ConexaoBD().getConexaoBD();
+		try (Connection conexaoBD = new ConexaoBD().getConexaoComBD();
 			 PreparedStatement cmd = conexaoBD.prepareStatement(sql)) {
 
 			cmd.setLong(1, id);
 			try (ResultSet result = cmd.executeQuery()) {
 				if (result.next()) {
-					return new Bairro(id, result.getString("nome_bairro"));
+					return new Bairro(id, result.getString("nome"));
 				}
 			}
 		} catch (SQLException e) {

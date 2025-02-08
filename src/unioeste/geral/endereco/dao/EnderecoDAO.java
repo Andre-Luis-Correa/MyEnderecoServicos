@@ -13,7 +13,7 @@ public class EnderecoDAO {
 	public static Endereco selectEnderecoPorId(Long id) throws Exception {
 		String sql = "SELECT cep, id_cidade, id_bairro, id_logradouro FROM endereco WHERE id_endereco = ?";
 
-		try (Connection conexao = new ConexaoBD().getConexaoBD();
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
 			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
 
 			cmd.setLong(1, id);
@@ -38,7 +38,7 @@ public class EnderecoDAO {
 	public static Endereco selectEnderecoPorCep(String cep) throws Exception {
 		String sql = "SELECT id_endereco, id_cidade, id_bairro, id_logradouro FROM endereco WHERE cep = ?";
 
-		try (Connection conexao = new ConexaoBD().getConexaoBD();
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
 			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
 
 			cmd.setString(1, cep);
@@ -63,7 +63,7 @@ public class EnderecoDAO {
 	public static void insertEndereco(Endereco endereco) throws Exception {
 		String sql = "INSERT INTO endereco (cep, id_cidade, id_bairro, id_logradouro) VALUES (?, ?, ?, ?)";
 
-		try (Connection conexao = new ConexaoBD().getConexaoBD();
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
 			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
 
 			cmd.setString(1, endereco.getCep());

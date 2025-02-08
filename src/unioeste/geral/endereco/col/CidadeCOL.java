@@ -9,12 +9,13 @@ public class CidadeCOL {
 		return id != null && id > 0;
 	}
 
-	public static boolean cidadeValida(Cidade cidade) {
+	public static boolean cidadeValida(Cidade cidade) throws Exception {
 		return cidade != null &&
 				idValido(cidade.getId()) &&
 				cidade.getNome() != null &&
-				!cidade.getNome().isBlank() &&
-				UnidadeFederativaCOL.unidadeFederativaValida(cidade.getUnidadeFederativa());
+				!cidade.getNome().trim().isEmpty() &&
+				UnidadeFederativaCOL.unidadeFederativaValida(cidade.getUnidadeFederativa()) &&
+				UnidadeFederativaCOL.unidadeFederativaExiste(cidade.getUnidadeFederativa());
 	}
 
 	public static boolean cidadeExiste(Cidade cidade) throws Exception {

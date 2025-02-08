@@ -17,25 +17,8 @@ public class CepAPI {
 	private static final String WEB_SERVICE = "http://viacep.com.br/ws/";
 
 	public static Endereco getCep(String cep) throws Exception {
-		String strUrl = WEB_SERVICE + cep + "/json";
+		StringBuilder resposta = obterRespostaCepAPI(cep);
 
-		URL url = new URL(strUrl);
-		HttpURLConnection conexao = (HttpURLConnection) url.openConnection();
-		conexao.setRequestMethod("GET");
-
-		if (conexao.getResponseCode() != 200) {
-			throw new Exception("Erro ao conectar à API. Código HTTP: " + conexao.getResponseCode());
-		}
-
-		StringBuilder resposta = new StringBuilder();
-		try (BufferedReader leitor = new BufferedReader(new InputStreamReader(conexao.getInputStream()))) {
-			String linha;
-			while ((linha = leitor.readLine()) != null) {
-				resposta.append(linha);
-			}
-		}
-
-		// Convertendo JSON manualmente para Map<String, String>
 		Map<String, String> jsonMap = jsonToMap(resposta.toString());
 
 		if (jsonMap.containsKey("erro")) {
@@ -70,9 +53,30 @@ public class CepAPI {
 		return endereco;
 	}
 
+	private static StringBuilder obterRespostaCepAPI(String cep) throws Exception {
+		String strUrl = WEB_SERVICE + cep + "/json";
+
+		URL url = new URL(strUrl);
+		HttpURLConnection conexao = (HttpURLConnection) url.openConnection();
+		conexao.setRequestMethod("GET");
+
+		if (conexao.getResponseCode() != 200) {
+			throw new Exception("Erro ao conectar à API. Código HTTP: " + conexao.getResponseCode());
+		}
+
+		StringBuilder resposta = new StringBuilder();
+		try (BufferedReader leitor = new BufferedReader(new InputStreamReader(conexao.getInputStream()))) {
+			String linha;
+			while ((linha = leitor.readLine()) != null) {
+				resposta.append(linha);
+			}
+		}
+		return resposta;
+	}
+
 	private static Map<String, String> jsonToMap(String json) {
 		Map<String, String> map = new HashMap<>();
-		json = json.replaceAll("[{}\"]", ""); // Remover chaves e aspas
+		json = json.replaceAll("[{}\"]", "");
 		String[] pares = json.split(",");
 
 		for (String par : pares) {

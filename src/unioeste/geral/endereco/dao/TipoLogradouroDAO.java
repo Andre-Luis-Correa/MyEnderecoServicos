@@ -13,7 +13,7 @@ public class TipoLogradouroDAO {
 	public static TipoLogradouro selectTipoLogradouroPorSigla(String sigla) throws Exception {
 		String sql = "SELECT nome_tipo_logradouro FROM tipo_logradouro WHERE sigla_tipo_logradouro = ?";
 
-		try (Connection conexao = new ConexaoBD().getConexaoBD();
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
 			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
 
 			cmd.setString(1, sigla);

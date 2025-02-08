@@ -13,7 +13,7 @@ public class CidadeDAO {
 	public static Cidade selectCidadePorId(Long id) throws Exception {
 		String sql = "SELECT nome, sigla_uf FROM cidade WHERE id_cidade = ?";
 
-		try (Connection conexao = new ConexaoBD().getConexaoBD();
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
 			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
 
 			cmd.setLong(1, id);

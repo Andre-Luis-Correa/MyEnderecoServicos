@@ -9,12 +9,13 @@ public class LogradouroCOL {
 		return id != null && id > 0;
 	}
 
-	public static boolean logradouroValido(Logradouro logradouro) {
+	public static boolean logradouroValido(Logradouro logradouro) throws Exception {
 		return logradouro != null &&
 				idValido(logradouro.getId()) &&
 				logradouro.getNome() != null &&
-				!logradouro.getNome().isBlank() &&
-				TipoLogradouroCOL.tipoLogradouroValido(logradouro.getTipoLogradouro());
+				!logradouro.getNome().trim().isEmpty() &&
+				TipoLogradouroCOL.tipoLogradouroValido(logradouro.getTipoLogradouro()) &&
+				TipoLogradouroCOL.tipoLogradouroExiste(logradouro.getTipoLogradouro());
 	}
 
 	public static boolean logradouroExiste(Logradouro logradouro) throws Exception {

@@ -13,7 +13,7 @@ public class BairroCOL {
 		return bairro != null &&
 				idValido(bairro.getId()) &&
 				bairro.getNome() != null &&
-				!bairro.getNome().isBlank();
+				!bairro.getNome().trim().isEmpty();
 	}
 
 	public static boolean bairroExiste(Bairro bairro) throws Exception {

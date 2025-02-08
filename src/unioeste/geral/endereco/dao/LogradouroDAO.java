@@ -13,7 +13,7 @@ public class LogradouroDAO {
 	public static Logradouro selectLogradouroPorId(Long id) throws Exception {
 		String sql = "SELECT nome, sigla_tipo_logradouro FROM logradouro WHERE id_logradouro = ?";
 
-		try (Connection conexao = new ConexaoBD().getConexaoBD();
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
 			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
 
 			cmd.setLong(1, id);

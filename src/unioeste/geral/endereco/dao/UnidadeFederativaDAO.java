@@ -14,7 +14,7 @@ public class UnidadeFederativaDAO {
 	public static UnidadeFederativa selectUnidadeFederativaPorSigla(String sigla) throws Exception {
 		String sql = "SELECT nome_uf FROM unidade_federativa WHERE sigla_uf = ?";
 
-		try (Connection conexaoBD = new ConexaoBD().getConexaoBD();
+		try (Connection conexaoBD = new ConexaoBD().getConexaoComBD();
 			 PreparedStatement cmd = conexaoBD.prepareStatement(sql)) {
 
 			cmd.setString(1, sigla);
