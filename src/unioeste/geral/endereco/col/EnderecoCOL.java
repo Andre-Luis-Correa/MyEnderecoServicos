@@ -10,7 +10,7 @@ public class EnderecoCOL {
 	}
 
 	public static boolean enderecoExistePorCep(Endereco endereco) throws Exception {
-		return endereco != null && EnderecoDAO.selectEnderecoPorCep(endereco.getCep()) != null;
+		return endereco != null && !EnderecoDAO.selectEnderecoPorCep(endereco.getCep()).isEmpty();
 	}
 
 	public static boolean enderecoExiste(Endereco endereco) throws Exception {

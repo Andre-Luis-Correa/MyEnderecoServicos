@@ -16,31 +16,26 @@ import java.util.List;
 
 public class UCEnderecoGeralServicos {
 
-    public static void cadastrarEndereco(Endereco endereco) throws Exception {
+    public static Endereco cadastrarEndereco(Endereco endereco) throws Exception {
         if (!EnderecoCOL.enderecoValido(endereco)) {
             throw new EnderecoException("Endereço inválido");
         }
 
-        if (EnderecoCOL.enderecoExistePorCep(endereco)) {
-            throw new EnderecoException("CEP já cadastrado");
-        }
-
-        EnderecoDAO.insertEndereco(endereco);
-        System.out.println("Endereço cadastrado");
+        return EnderecoDAO.insertEndereco(endereco);
     }
 
-    public static Endereco obterEnderecoPorCep(String cep) throws Exception {
+    public static List<Endereco> obterEnderecoPorCep(String cep) throws Exception {
         if (!EnderecoCOL.cepValido(cep)) {
             throw new EnderecoException("Formato de CEP inválido (" + cep + ")");
         }
 
-        Endereco endereco = EnderecoDAO.selectEnderecoPorCep(cep);
+        List<Endereco> enderecoList = EnderecoDAO.selectEnderecoPorCep(cep);
 
-        if (endereco == null) {
-            throw new EnderecoException("Endereço não cadastrado");
+        if (enderecoList.isEmpty()) {
+            throw new EnderecoException("Nenhum endereço encontrado");
         }
 
-        return endereco;
+        return enderecoList;
     }
 
     public static Endereco obterEnderecoPorId(Long id) throws Exception {
@@ -114,16 +109,17 @@ public class UCEnderecoGeralServicos {
             Logradouro logradouro = new Logradouro(1L, "Sete de Setembro", tipoLogradouro);
             Bairro bairro = new Bairro(1L, "Centro");
 
-            Endereco endereco = new Endereco(1L, "85875000", cidade, logradouro, bairro);
+            Endereco endereco = new Endereco(1L, "75875000", cidade, logradouro, bairro);
 
-//            // Teste cadastrarEndereco
-//            System.out.println("Testando cadastrarEndereco...");
-//            cadastrarEndereco(endereco);
+            // Teste cadastrarEndereco
+            System.out.println("Testando cadastrarEndereco...");
+            Endereco endereco1 = cadastrarEndereco(endereco);
+            System.out.println("Id do endereço criado: " + endereco1.getId());
 
             // Teste obterEnderecoPorCep
             System.out.println("Testando obterEnderecoPorCep...");
-            Endereco e1 = obterEnderecoPorCep("80000000");
-            System.out.println("Endereço obtido: " + e1.getCep());
+            List<Endereco> e1 = obterEnderecoPorCep("80000000");
+            System.out.println("Endereço obtido: " + e1.get(0) + " " + e1.get(1));
 
             // Teste obterEnderecoPorId
             System.out.println("Testando obterEnderecoPorId...");
