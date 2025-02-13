@@ -2,6 +2,7 @@ package unioeste.geral.endereco.dao;
 
 import unioeste.apoio.bd.ConexaoBD;
 import unioeste.geral.endereco.bo.endereco.Endereco;
+import unioeste.geral.endereco.bo.unidadefederativa.UnidadeFederativa;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -89,5 +90,31 @@ public class EnderecoDAO {
 		}
 
 		return endereco;
+	}
+
+	public static List<Endereco> selectTodosEnderecos() throws Exception {
+		List<Endereco> enderecoList = new ArrayList<>();
+		String sql = "SELECT * FROM endereco;";
+
+		try (Connection conn = new ConexaoBD().getConexaoComBD();
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+			ResultSet result = stmt.executeQuery();
+
+			while (result.next()) {
+				Endereco endereco = new Endereco();
+				endereco.setId(result.getLong("id_endereco"));
+				endereco.setCidade(CidadeDAO.selectCidadePorId(result.getLong("id_cidade")));
+				endereco.setBairro(BairroDAO.selectBairroPorId(result.getLong("id_bairro")));
+				endereco.setLogradouro(LogradouroDAO.selectLogradouroPorId(result.getLong("id_logradouro")));
+				endereco.setCep(result.getString("cep"));
+				enderecoList.add(endereco);
+			}
+
+		} catch (Exception e) {
+			throw new Exception("Erro ao buscar Enderecos", e);
+		}
+
+		return enderecoList;
 	}
 }

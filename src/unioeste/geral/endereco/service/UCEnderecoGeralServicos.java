@@ -80,6 +80,10 @@ public class UCEnderecoGeralServicos {
         return cidade;
     }
 
+    public static List<Endereco> obterListaDeEnderecos() throws Exception {
+        return EnderecoDAO.selectTodosEnderecos();
+    }
+
     public static List<UnidadeFederativa> obterListaDeUnidadesFederativas() throws Exception {
         return UnidadeFederativaDAO.selectTodasUnidadesFederativas();
     }
