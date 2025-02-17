@@ -55,4 +55,47 @@ public class CidadeDAO {
 
 		return cidadeList;
 	}
+
+	public static Cidade insertCidade(Cidade cidade) throws Exception {
+		String sql = "INSERT INTO cidade (nome, sigla_uf) VALUES (?, ?) RETURNING id_cidade";
+
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
+			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
+
+			cmd.setString(1, cidade.getNome());
+			cmd.setString(2, cidade.getUnidadeFederativa().getSigla());
+
+			try (ResultSet generatedKeys = cmd.executeQuery()) {
+				if (generatedKeys.next()) {
+					cidade.setId(generatedKeys.getLong(1));
+				} else {
+					throw new SQLException("Falha ao obter o ID da cidade inserida.");
+				}
+			}
+		} catch (SQLException e) {
+			throw new Exception("Erro ao inserir cidade: " + cidade, e);
+		}
+
+		return cidade;
+	}
+
+	public static Cidade selectCidadePorNome(String nome) throws Exception {
+		String sql = "SELECT id_cidade, sigla_uf FROM cidade WHERE nome = ?";
+
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
+			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
+
+			cmd.setString(1, nome);
+			try (ResultSet result = cmd.executeQuery()) {
+				if (result.next()) {
+					return new Cidade(result.getLong("id_cidade"), nome,
+							UnidadeFederativaDAO.selectUnidadeFederativaPorSigla(result.getString("sigla_uf")));
+				}
+			}
+		} catch (SQLException e) {
+			throw new Exception("Erro ao buscar cidade pelo nome: " + nome, e);
+		}
+
+		return null;
+	}
 }

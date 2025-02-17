@@ -17,8 +17,33 @@ import java.util.List;
 public class UCEnderecoGeralServicos {
 
     public static Endereco cadastrarEndereco(Endereco endereco) throws Exception {
+        if (endereco == null) {
+            throw new EnderecoException("Endereço inválido: objeto nulo");
+        }
+
+        Cidade cidadeExistente = CidadeDAO.selectCidadePorNome(endereco.getCidade().getNome());
+        if (cidadeExistente != null) {
+            endereco.setCidade(cidadeExistente);
+        } else {
+            endereco.setCidade(CidadeDAO.insertCidade(endereco.getCidade()));
+        }
+
+        Bairro bairroExistente = BairroDAO.selectBairroPorNome(endereco.getBairro().getNome());
+        if (bairroExistente != null) {
+            endereco.setBairro(bairroExistente);
+        } else {
+            endereco.setBairro(BairroDAO.insertBairro(endereco.getBairro()));
+        }
+
+        Logradouro logradouroExistente = LogradouroDAO.selectLogradouroPorNome(endereco.getLogradouro().getNome());
+        if (logradouroExistente != null) {
+            endereco.setLogradouro(logradouroExistente);
+        } else {
+            endereco.setLogradouro(LogradouroDAO.insertLogradouro(endereco.getLogradouro()));
+        }
+
         if (!EnderecoCOL.enderecoValido(endereco)) {
-            throw new EnderecoException("Endereço inválido");
+            throw new EnderecoException("Endereço inválido após tentativas de cadastro");
         }
 
         return EnderecoDAO.insertEndereco(endereco);
@@ -108,7 +133,7 @@ public class UCEnderecoGeralServicos {
         try {
             // Criando objetos necessários
             UnidadeFederativa uf = new UnidadeFederativa("PR", "Paraná");
-            Cidade cidade = new Cidade(1L, "Cascavel", uf);
+            Cidade cidade = new Cidade(1L, "Ceara", uf);
             TipoLogradouro tipoLogradouro = new TipoLogradouro("R", "Rua");
             Logradouro logradouro = new Logradouro(1L, "Sete de Setembro", tipoLogradouro);
             Bairro bairro = new Bairro(1L, "Centro");

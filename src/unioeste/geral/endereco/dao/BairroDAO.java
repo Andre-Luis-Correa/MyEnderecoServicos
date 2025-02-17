@@ -51,4 +51,47 @@ public class BairroDAO {
 
 		return bairroList;
 	}
+
+	public static Bairro insertBairro(Bairro bairro) throws Exception {
+		String sql = "INSERT INTO bairro (nome) VALUES (?) RETURNING id_bairro";
+
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
+			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
+
+			cmd.setString(1, bairro.getNome());
+
+			try (ResultSet generatedKeys = cmd.executeQuery()) {
+				if (generatedKeys.next()) {
+					bairro.setId(generatedKeys.getLong(1));
+				} else {
+					throw new SQLException("Falha ao obter o ID do bairro inserido.");
+				}
+			}
+		} catch (SQLException e) {
+			throw new Exception("Erro ao inserir bairro: " + bairro, e);
+		}
+
+		return bairro;
+	}
+
+
+	public static Bairro selectBairroPorNome(String nome) throws Exception {
+		String sql = "SELECT id_bairro FROM bairro WHERE nome = ?";
+
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
+			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
+
+			cmd.setString(1, nome);
+			try (ResultSet result = cmd.executeQuery()) {
+				if (result.next()) {
+					return new Bairro(result.getLong("id_bairro"), nome);
+				}
+			}
+		} catch (SQLException e) {
+			throw new Exception("Erro ao buscar bairro pelo nome: " + nome, e);
+		}
+
+		return null;
+	}
+
 }

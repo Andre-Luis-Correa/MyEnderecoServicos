@@ -55,4 +55,48 @@ public class LogradouroDAO {
 
 		return logradouroList;
     }
+
+	public static Logradouro insertLogradouro(Logradouro logradouro) throws Exception {
+		String sql = "INSERT INTO logradouro (nome, sigla_tipo_logradouro) VALUES (?, ?) RETURNING id_logradouro";
+
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
+			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
+
+			cmd.setString(1, logradouro.getNome());
+			cmd.setString(2, logradouro.getTipoLogradouro().getSigla());
+
+			try (ResultSet generatedKeys = cmd.executeQuery()) {
+				if (generatedKeys.next()) {
+					logradouro.setId(generatedKeys.getLong(1));
+				} else {
+					throw new SQLException("Falha ao obter o ID do logradouro inserido.");
+				}
+			}
+		} catch (SQLException e) {
+			throw new Exception("Erro ao inserir logradouro: " + logradouro, e);
+		}
+
+		return logradouro;
+	}
+
+	public static Logradouro selectLogradouroPorNome(String nome) throws Exception {
+		String sql = "SELECT id_logradouro, sigla_tipo_logradouro FROM logradouro WHERE nome = ?";
+
+		try (Connection conexao = new ConexaoBD().getConexaoComBD();
+			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
+
+			cmd.setString(1, nome);
+			try (ResultSet result = cmd.executeQuery()) {
+				if (result.next()) {
+					return new Logradouro(result.getLong("id_logradouro"), nome,
+							TipoLogradouroDAO.selectTipoLogradouroPorSigla(result.getString("sigla_tipo_logradouro")));
+				}
+			}
+		} catch (SQLException e) {
+			throw new Exception("Erro ao buscar logradouro pelo nome: " + nome, e);
+		}
+
+		return null;
+	}
+
 }
