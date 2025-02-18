@@ -17,33 +17,8 @@ import java.util.List;
 public class UCEnderecoGeralServicos {
 
     public static Endereco cadastrarEndereco(Endereco endereco) throws Exception {
-        if (endereco == null) {
-            throw new EnderecoException("Endereço inválido: objeto nulo");
-        }
-
-        Cidade cidadeExistente = CidadeDAO.selectCidadePorNome(endereco.getCidade().getNome());
-        if (cidadeExistente != null) {
-            endereco.setCidade(cidadeExistente);
-        } else {
-            endereco.setCidade(CidadeDAO.insertCidade(endereco.getCidade()));
-        }
-
-        Bairro bairroExistente = BairroDAO.selectBairroPorNome(endereco.getBairro().getNome());
-        if (bairroExistente != null) {
-            endereco.setBairro(bairroExistente);
-        } else {
-            endereco.setBairro(BairroDAO.insertBairro(endereco.getBairro()));
-        }
-
-        Logradouro logradouroExistente = LogradouroDAO.selectLogradouroPorNome(endereco.getLogradouro().getNome());
-        if (logradouroExistente != null) {
-            endereco.setLogradouro(logradouroExistente);
-        } else {
-            endereco.setLogradouro(LogradouroDAO.insertLogradouro(endereco.getLogradouro()));
-        }
-
         if (!EnderecoCOL.enderecoValido(endereco)) {
-            throw new EnderecoException("Endereço inválido após tentativas de cadastro");
+            throw new EnderecoException("Endereço inválido");
         }
 
         return EnderecoDAO.insertEndereco(endereco);
