@@ -1,7 +1,7 @@
 package unioeste.geral.endereco.dao;
 
-import unioeste.apoio.bd.ConexaoBD;
 import unioeste.geral.endereco.bo.cidade.Cidade;
+import unioeste.geral.endereco.bo.unidadefederativa.UnidadeFederativa;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,90 +12,65 @@ import java.util.List;
 
 public class CidadeDAO {
 
-	public static Cidade selectCidadePorId(Long id) throws Exception {
-		String sql = "SELECT nome, sigla_uf FROM cidade WHERE id_cidade = ?";
+	public Cidade selecionarCidadePorId(Long id, Connection conexao) throws SQLException {
+		String sql = """
+        SELECT c.id_cidade AS cidade_id, c.nome AS cidade_nome,
+               uf.sigla_uf AS uf_sigla, uf.nome_uf AS uf_nome
+        FROM cidade c
+        JOIN unidade_federativa uf ON c.sigla_uf = uf.sigla_uf
+        WHERE c.id_cidade = ?;
+    """;
 
-		try (Connection conexao = new ConexaoBD().getConexaoComBD();
-			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
+		try (PreparedStatement preparedStatement = conexao.prepareStatement(sql)) {
+			preparedStatement.setLong(1, id);
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
 
-			cmd.setLong(1, id);
-			try (ResultSet result = cmd.executeQuery()) {
-				if (result.next()) {
+					UnidadeFederativa uf = new UnidadeFederativa();
+					uf.setSigla(resultSet.getString("uf_sigla"));
+					uf.setNome(resultSet.getString("uf_nome"));
+
 					Cidade cidade = new Cidade();
-					cidade.setId(id);
-					cidade.setNome(result.getString("nome"));
-					cidade.setUnidadeFederativa(UnidadeFederativaDAO.selectUnidadeFederativaPorSigla(result.getString("sigla_uf")));
+					cidade.setId(resultSet.getLong("cidade_id"));
+					cidade.setNome(resultSet.getString("cidade_nome"));
+					cidade.setUnidadeFederativa(uf);
+
 					return cidade;
 				}
 			}
-		} catch (SQLException e) {
-			throw new Exception("Erro ao buscar cidade pelo ID: " + id, e);
 		}
-
 		return null;
 	}
 
-	public static List<Cidade> selectTodasCidades() throws Exception {
-		List<Cidade> cidadeList = new ArrayList<>();
-		String sql = "SELECT * FROM cidade;";
 
-		try (Connection conn = new ConexaoBD().getConexaoComBD();
-			 PreparedStatement stmt = conn.prepareStatement(sql)) {
+	public List<Cidade> selecionarTodasCidades(Connection conexao) throws SQLException {
+		String sql = """
+        SELECT c.id_cidade, c.nome AS cidade_nome,
+               uf.sigla_uf, uf.nome_uf
+        FROM cidade c
+        JOIN unidade_federativa uf ON c.sigla_uf = uf.sigla_uf
+        ORDER BY c.nome;
+    """;
 
-			ResultSet rs = stmt.executeQuery();
+		List<Cidade> cidades = new ArrayList<>();
 
-			while (rs.next()) {
-				Cidade cidade = new Cidade(rs.getLong("id_cidade"), rs.getString("nome"), UnidadeFederativaDAO.selectUnidadeFederativaPorSigla(rs.getString("sigla_uf")));
-				cidadeList.add(cidade);
+		try (PreparedStatement preparedStatement = conexao.prepareStatement(sql);
+			 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+			while (resultSet.next()) {
+				UnidadeFederativa uf = new UnidadeFederativa();
+				uf.setSigla(resultSet.getString("sigla_uf"));
+				uf.setNome(resultSet.getString("nome_uf"));
+
+				Cidade cidade = new Cidade();
+				cidade.setId(resultSet.getLong("id_cidade"));
+				cidade.setNome(resultSet.getString("cidade_nome"));
+				cidade.setUnidadeFederativa(uf);
+
+				cidades.add(cidade);
 			}
-
-		} catch (Exception e) {
-			throw new Exception("Erro ao buscar Cidades", e);
 		}
 
-		return cidadeList;
-	}
-
-	public static Cidade insertCidade(Cidade cidade) throws Exception {
-		String sql = "INSERT INTO cidade (nome, sigla_uf) VALUES (?, ?) RETURNING id_cidade";
-
-		try (Connection conexao = new ConexaoBD().getConexaoComBD();
-			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
-
-			cmd.setString(1, cidade.getNome());
-			cmd.setString(2, cidade.getUnidadeFederativa().getSigla());
-
-			try (ResultSet generatedKeys = cmd.executeQuery()) {
-				if (generatedKeys.next()) {
-					cidade.setId(generatedKeys.getLong(1));
-				} else {
-					throw new SQLException("Falha ao obter o ID da cidade inserida.");
-				}
-			}
-		} catch (SQLException e) {
-			throw new Exception("Erro ao inserir cidade: " + cidade, e);
-		}
-
-		return cidade;
-	}
-
-	public static Cidade selectCidadePorNome(String nome) throws Exception {
-		String sql = "SELECT id_cidade, sigla_uf FROM cidade WHERE nome = ?";
-
-		try (Connection conexao = new ConexaoBD().getConexaoComBD();
-			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
-
-			cmd.setString(1, nome);
-			try (ResultSet result = cmd.executeQuery()) {
-				if (result.next()) {
-					return new Cidade(result.getLong("id_cidade"), nome,
-							UnidadeFederativaDAO.selectUnidadeFederativaPorSigla(result.getString("sigla_uf")));
-				}
-			}
-		} catch (SQLException e) {
-			throw new Exception("Erro ao buscar cidade pelo nome: " + nome, e);
-		}
-
-		return null;
+		return cidades;
 	}
 }

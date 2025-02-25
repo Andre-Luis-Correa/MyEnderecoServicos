@@ -16,7 +16,7 @@ import java.util.Map;
 public class CepAPI {
 	private static final String WEB_SERVICE = "http://viacep.com.br/ws/";
 
-	public static Endereco getCep(String cep) throws Exception {
+	public Endereco obterEnderecoExterno(String cep) throws Exception {
 		StringBuilder resposta = obterRespostaCepAPI(cep);
 
 		Map<String, String> jsonMap = jsonToMap(resposta.toString());
@@ -53,7 +53,7 @@ public class CepAPI {
 		return endereco;
 	}
 
-	private static StringBuilder obterRespostaCepAPI(String cep) throws Exception {
+	private StringBuilder obterRespostaCepAPI(String cep) throws Exception {
 		String strUrl = WEB_SERVICE + cep + "/json";
 
 		URL url = new URL(strUrl);
@@ -74,7 +74,7 @@ public class CepAPI {
 		return resposta;
 	}
 
-	private static Map<String, String> jsonToMap(String json) {
+	private Map<String, String> jsonToMap(String json) {
 		Map<String, String> map = new HashMap<>();
 		json = json.replaceAll("[{}\"]", "");
 		String[] pares = json.split(",");
@@ -90,7 +90,7 @@ public class CepAPI {
 
 	public static void main(String[] args) {
 		try {
-			Endereco endereco = getCep("85875000");
+			Endereco endereco = new CepAPI().obterEnderecoExterno("85875000");
 
 			System.out.println("\n===== Endereço Encontrado =====");
 			System.out.println("CEP: " + endereco.getCep());

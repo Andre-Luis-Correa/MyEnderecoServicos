@@ -13,43 +13,28 @@ import java.util.List;
 
 public class UnidadeFederativaDAO {
 
-	public static UnidadeFederativa selectUnidadeFederativaPorSigla(String sigla) throws Exception {
-		String sql = "SELECT nome_uf FROM unidade_federativa WHERE sigla_uf = ?";
+	public List<UnidadeFederativa> selecionarTodasUnidadesFederativas(Connection conexao) throws SQLException {
+		String sql = """
+        SELECT uf.sigla_uf, uf.nome_uf
+        FROM unidade_federativa uf
+        ORDER BY uf.nome_uf;
+    """;
 
-		try (Connection conexaoBD = new ConexaoBD().getConexaoComBD();
-			 PreparedStatement cmd = conexaoBD.prepareStatement(sql)) {
+		List<UnidadeFederativa> unidadesFederativas = new ArrayList<>();
 
-			cmd.setString(1, sigla);
-			try (ResultSet result = cmd.executeQuery()) {
-				if (result.next()) {
-					return new UnidadeFederativa(sigla, result.getString("nome_uf"));
-				}
+		try (PreparedStatement preparedStatement = conexao.prepareStatement(sql);
+			 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+			while (resultSet.next()) {
+				UnidadeFederativa uf = new UnidadeFederativa();
+				uf.setSigla(resultSet.getString("sigla_uf"));
+				uf.setNome(resultSet.getString("nome_uf"));
+
+				unidadesFederativas.add(uf);
 			}
-		} catch (SQLException e) {
-			throw new Exception("Erro ao buscar unidade federativa pela sigla: " + sigla, e);
 		}
 
-		return null;
+		return unidadesFederativas;
 	}
 
-    public static List<UnidadeFederativa> selectTodasUnidadesFederativas() throws Exception {
-		List<UnidadeFederativa> unidadeFederativaList = new ArrayList<>();
-		String sql = "SELECT * FROM unidade_federativa;";
-
-		try (Connection conn = new ConexaoBD().getConexaoComBD();
-			 PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-			ResultSet rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				UnidadeFederativa unidadeFederativa = new UnidadeFederativa(rs.getString("sigla_uf"), rs.getString("nome_uf"));
-				unidadeFederativaList.add(unidadeFederativa);
-			}
-
-		} catch (Exception e) {
-			throw new Exception("Erro ao buscar Unidades Federativas", e);
-		}
-
-		return unidadeFederativaList;
-    }
 }

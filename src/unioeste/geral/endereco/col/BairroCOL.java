@@ -1,7 +1,6 @@
 package unioeste.geral.endereco.col;
 
 import unioeste.geral.endereco.bo.bairro.Bairro;
-import unioeste.geral.endereco.dao.BairroDAO;
 
 public class BairroCOL {
 
@@ -14,11 +13,5 @@ public class BairroCOL {
 				idValido(bairro.getId()) &&
 				bairro.getNome() != null &&
 				!bairro.getNome().trim().isEmpty();
-	}
-
-	public static boolean bairroExiste(Bairro bairro) throws Exception {
-		return bairro != null &&
-				idValido(bairro.getId()) &&
-				BairroDAO.selectBairroPorId(bairro.getId()) != null;
 	}
 }

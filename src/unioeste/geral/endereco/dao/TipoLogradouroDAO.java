@@ -1,6 +1,5 @@
 package unioeste.geral.endereco.dao;
 
-import unioeste.apoio.bd.ConexaoBD;
 import unioeste.geral.endereco.bo.tipologradouro.TipoLogradouro;
 
 import java.sql.Connection;
@@ -12,44 +11,28 @@ import java.util.List;
 
 public class TipoLogradouroDAO {
 
-	public static TipoLogradouro selectTipoLogradouroPorSigla(String sigla) throws Exception {
-		String sql = "SELECT nome_tipo_logradouro FROM tipo_logradouro WHERE sigla_tipo_logradouro = ?";
+	public List<TipoLogradouro> selecionarTodosTiposLogradouro(Connection conexao) throws SQLException {
+		String sql = """
+        SELECT tl.sigla_tipo_logradouro, tl.nome_tipo_logradouro
+        FROM tipo_logradouro tl
+        ORDER BY tl.nome_tipo_logradouro;
+    """;
 
-		try (Connection conexao = new ConexaoBD().getConexaoComBD();
-			 PreparedStatement cmd = conexao.prepareStatement(sql)) {
+		List<TipoLogradouro> tiposLogradouro = new ArrayList<>();
 
-			cmd.setString(1, sigla);
+		try (PreparedStatement preparedStatement = conexao.prepareStatement(sql);
+			 ResultSet resultSet = preparedStatement.executeQuery()) {
 
-			try (ResultSet result = cmd.executeQuery()) {
-				if (result.next()) {
-					return new TipoLogradouro(sigla, result.getString("nome_tipo_logradouro"));
-				}
+			while (resultSet.next()) {
+				TipoLogradouro tipoLogradouro = new TipoLogradouro();
+				tipoLogradouro.setSigla(resultSet.getString("sigla_tipo_logradouro"));
+				tipoLogradouro.setNome(resultSet.getString("nome_tipo_logradouro"));
+
+				tiposLogradouro.add(tipoLogradouro);
 			}
-		} catch (SQLException e) {
-			throw new Exception("Erro ao buscar tipo de logradouro pela sigla: " + sigla, e);
 		}
 
-		return null;
+		return tiposLogradouro;
 	}
 
-    public static List<TipoLogradouro> selectTodosTiposLogradouro() throws Exception {
-		List<TipoLogradouro> tipoLogradouroList = new ArrayList<>();
-		String sql = "SELECT * FROM tipo_logradouro;";
-
-		try (Connection conn = new ConexaoBD().getConexaoComBD();
-			 PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-			ResultSet rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				TipoLogradouro tipoLogradouro = new TipoLogradouro(rs.getString("sigla_tipo_logradouro"), rs.getString("nome_tipo_logradouro"));
-				tipoLogradouroList.add(tipoLogradouro);
-			}
-
-		} catch (Exception e) {
-			throw new Exception("Erro ao buscar Tipos de Logradouro", e);
-		}
-
-		return tipoLogradouroList;
-    }
 }

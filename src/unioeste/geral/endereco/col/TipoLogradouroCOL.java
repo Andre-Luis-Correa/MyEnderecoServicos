@@ -1,7 +1,6 @@
 package unioeste.geral.endereco.col;
 
 import unioeste.geral.endereco.bo.tipologradouro.TipoLogradouro;
-import unioeste.geral.endereco.dao.TipoLogradouroDAO;
 
 public class TipoLogradouroCOL {
 
@@ -14,12 +13,6 @@ public class TipoLogradouroCOL {
 				siglaValida(tipoLogradouro.getSigla()) &&
 				tipoLogradouro.getNome() != null &&
 				!tipoLogradouro.getNome().trim().isEmpty();
-	}
-
-	public static boolean tipoLogradouroExiste(TipoLogradouro tipoLogradouro) throws Exception {
-		return tipoLogradouro != null &&
-				tipoLogradouro.getSigla() != null &&
-				TipoLogradouroDAO.selectTipoLogradouroPorSigla(tipoLogradouro.getSigla()) != null;
 	}
 
 }
