@@ -20,7 +20,7 @@ public class BairroDAO {
 				if (resultSet.next()) {
 
 					Bairro bairro = new Bairro();
-					bairro.setId(resultSet.getLong("bairro_id"));
+					bairro.setId(resultSet.getLong("id_bairro"));
 					bairro.setNome(resultSet.getString("nome"));
 
 					return bairro;

@@ -1,6 +1,5 @@
 package unioeste.geral.endereco.dao;
 
-import unioeste.apoio.bd.ConexaoBD;
 import unioeste.geral.endereco.bo.bairro.Bairro;
 import unioeste.geral.endereco.bo.cidade.Cidade;
 import unioeste.geral.endereco.bo.endereco.Endereco;
@@ -14,210 +13,210 @@ import java.util.List;
 
 public class EnderecoDAO {
 
-	public Endereco inserirEndereco(Endereco endereco, Connection conexao) {
-		String sql = "INSERT INTO endereco (cep, id_cidade, id_logradouro, id_bairro) VALUES (?, ?, ?, ?)";
+    public Endereco inserirEndereco(Endereco endereco, Connection conexao) {
+		System.out.println("Chegou até aqui -1");
+        String sql = "INSERT INTO endereco (cep, id_cidade, id_bairro, id_logradouro) VALUES (?, ?, ?, ?);";
+		System.out.println("Chegou até aqui 0");
+        try (PreparedStatement preparedStatement = conexao.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            preparedStatement.setString(1, endereco.getCep());
+            preparedStatement.setLong(2, endereco.getCidade().getId());
+            preparedStatement.setLong(3, endereco.getBairro().getId());
+			preparedStatement.setLong(4, endereco.getLogradouro().getId());
 
-		try (PreparedStatement preparedStatement = conexao.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-			preparedStatement.setString(1, endereco.getCep());
-			preparedStatement.setLong(2, endereco.getCidade().getId());
-			preparedStatement.setLong(3, endereco.getLogradouro().getId());
-			preparedStatement.setLong(4, endereco.getBairro().getId());
+			System.out.println("Chegou até aqui 1");
+            preparedStatement.executeUpdate();
+			System.out.println("Chegou até aqui 2");
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+			System.out.println("Chegou até aqui 3");
+            if (resultSet.next()) {
+				System.out.println("Chegou até aqui 4");
+                endereco.setId(resultSet.getLong("id_endereco"));
+                return endereco;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
-			int rowsAffected = preparedStatement.executeUpdate();
+        return null;
+    }
 
-			if (rowsAffected > 0) {
-				try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-					if (generatedKeys.next()) {
-						endereco.setId(generatedKeys.getLong(1));
-						return endereco;
-					}
-				}
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+public List<Endereco> selecionarEnderecosPorCep(String cep, Connection conexao) throws SQLException {
+    String sql = """
+                SELECT e.id_endereco, e.cep,
+                       c.id_cidade, c.nome AS cidade_nome,
+                       uf.sigla_uf, uf.nome_uf,
+                       l.id_logradouro, l.nome AS logradouro_nome,
+                       tl.sigla_tipo_logradouro, tl.nome_tipo_logradouro,
+                       b.id_bairro, b.nome AS bairro_nome
+                FROM endereco e
+                JOIN cidade c ON e.id_cidade = c.id_cidade
+                JOIN unidade_federativa uf ON c.sigla_uf = uf.sigla_uf
+                JOIN logradouro l ON e.id_logradouro = l.id_logradouro
+                JOIN tipo_logradouro tl ON l.sigla_tipo_logradouro = tl.sigla_tipo_logradouro
+                JOIN bairro b ON e.id_bairro = b.id_bairro
+                WHERE e.cep = ?;
+            """;
 
-		return null;
-	}
+    List<Endereco> enderecos = new ArrayList<>();
 
-	public List<Endereco> selecionarEnderecosPorCep(String cep, Connection conexao) throws SQLException {
-		String sql = """
-        SELECT e.id_endereco, e.cep,
-               c.id_cidade, c.nome AS cidade_nome,
-               uf.sigla_uf, uf.nome_uf,
-               l.id_logradouro, l.nome AS logradouro_nome,
-               tl.sigla_tipo_logradouro, tl.nome_tipo_logradouro,
-               b.id_bairro, b.nome AS bairro_nome
-        FROM endereco e
-        JOIN cidade c ON e.id_cidade = c.id_cidade
-        JOIN unidade_federativa uf ON c.sigla_uf = uf.sigla_uf
-        JOIN logradouro l ON e.id_logradouro = l.id_logradouro
-        JOIN tipo_logradouro tl ON l.sigla_tipo_logradouro = tl.sigla_tipo_logradouro
-        JOIN bairro b ON e.id_bairro = b.id_bairro
-        WHERE e.cep = ?;
-    """;
+    try (PreparedStatement preparedStatement = conexao.prepareStatement(sql)) {
+        preparedStatement.setString(1, cep);
 
-		List<Endereco> enderecos = new ArrayList<>();
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                UnidadeFederativa uf = new UnidadeFederativa();
+                uf.setSigla(resultSet.getString("sigla_uf"));
+                uf.setNome(resultSet.getString("nome_uf"));
 
-		try (PreparedStatement preparedStatement = conexao.prepareStatement(sql)) {
-			preparedStatement.setString(1, cep);
+                Cidade cidade = new Cidade();
+                cidade.setId(resultSet.getLong("id_cidade"));
+                cidade.setNome(resultSet.getString("cidade_nome"));
+                cidade.setUnidadeFederativa(uf);
 
-			try (ResultSet resultSet = preparedStatement.executeQuery()) {
-				while (resultSet.next()) {
-					// Monta Unidade Federativa
-					UnidadeFederativa uf = new UnidadeFederativa();
-					uf.setSigla(resultSet.getString("sigla_uf"));
-					uf.setNome(resultSet.getString("nome_uf"));
+                TipoLogradouro tipoLogradouro = new TipoLogradouro();
+                tipoLogradouro.setSigla(resultSet.getString("sigla_tipo_logradouro"));
+                tipoLogradouro.setNome(resultSet.getString("nome_tipo_logradouro"));
 
-					Cidade cidade = new Cidade();
-					cidade.setId(resultSet.getLong("id_cidade"));
-					cidade.setNome(resultSet.getString("cidade_nome"));
-					cidade.setUnidadeFederativa(uf);
+                Logradouro logradouro = new Logradouro();
+                logradouro.setId(resultSet.getLong("id_logradouro"));
+                logradouro.setNome(resultSet.getString("logradouro_nome"));
+                logradouro.setTipoLogradouro(tipoLogradouro);
 
-					TipoLogradouro tipoLogradouro = new TipoLogradouro();
-					tipoLogradouro.setSigla(resultSet.getString("sigla_tipo_logradouro"));
-					tipoLogradouro.setNome(resultSet.getString("nome_tipo_logradouro"));
+                Bairro bairro = new Bairro();
+                bairro.setId(resultSet.getLong("id_bairro"));
+                bairro.setNome(resultSet.getString("bairro_nome"));
 
-					Logradouro logradouro = new Logradouro();
-					logradouro.setId(resultSet.getLong("id_logradouro"));
-					logradouro.setNome(resultSet.getString("logradouro_nome"));
-					logradouro.setTipoLogradouro(tipoLogradouro);
+                Endereco endereco = new Endereco();
+                endereco.setId(resultSet.getLong("id_endereco"));
+                endereco.setCep(resultSet.getString("cep"));
+                endereco.setCidade(cidade);
+                endereco.setLogradouro(logradouro);
+                endereco.setBairro(bairro);
 
-					Bairro bairro = new Bairro();
-					bairro.setId(resultSet.getLong("id_bairro"));
-					bairro.setNome(resultSet.getString("bairro_nome"));
+                enderecos.add(endereco);
+            }
+        }
+    }
 
-					Endereco endereco = new Endereco();
-					endereco.setId(resultSet.getLong("id_endereco"));
-					endereco.setCep(resultSet.getString("cep"));
-					endereco.setCidade(cidade);
-					endereco.setLogradouro(logradouro);
-					endereco.setBairro(bairro);
+    return enderecos;
+}
 
-					enderecos.add(endereco);
-				}
-			}
-		}
+public Endereco selecionarEnderecoPorId(Long id, Connection conexao) throws SQLException {
+    String sql = """
+                SELECT e.id_endereco, e.cep,
+                       c.id_cidade, c.nome AS cidade_nome,
+                       uf.sigla_uf, uf.nome_uf,
+                       l.id_logradouro, l.nome AS logradouro_nome,
+                       tl.sigla_tipo_logradouro, tl.nome_tipo_logradouro,
+                       b.id_bairro, b.nome AS bairro_nome
+                FROM endereco e
+                JOIN cidade c ON e.id_cidade = c.id_cidade
+                JOIN unidade_federativa uf ON c.sigla_uf = uf.sigla_uf
+                JOIN logradouro l ON e.id_logradouro = l.id_logradouro
+                JOIN tipo_logradouro tl ON l.sigla_tipo_logradouro = tl.sigla_tipo_logradouro
+                JOIN bairro b ON e.id_bairro = b.id_bairro
+                WHERE e.id_endereco = ?;
+            """;
 
-		return enderecos;
-	}
+    try (PreparedStatement preparedStatement = conexao.prepareStatement(sql)) {
+        preparedStatement.setLong(1, id);
 
-	public Endereco selecionarEnderecoPorId(Long id, Connection conexao) throws SQLException {
-		String sql = """
-        SELECT e.id_endereco, e.cep,
-               c.id_cidade, c.nome AS cidade_nome,
-               uf.sigla_uf, uf.nome_uf,
-               l.id_logradouro, l.nome AS logradouro_nome,
-               tl.sigla_tipo_logradouro, tl.nome_tipo_logradouro,
-               b.id_bairro, b.nome AS bairro_nome
-        FROM endereco e
-        JOIN cidade c ON e.id_cidade = c.id_cidade
-        JOIN unidade_federativa uf ON c.sigla_uf = uf.sigla_uf
-        JOIN logradouro l ON e.id_logradouro = l.id_logradouro
-        JOIN tipo_logradouro tl ON l.sigla_tipo_logradouro = tl.sigla_tipo_logradouro
-        JOIN bairro b ON e.id_bairro = b.id_bairro
-        WHERE e.id_endereco = ?;
-    """;
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            if (resultSet.next()) {
 
-		try (PreparedStatement preparedStatement = conexao.prepareStatement(sql)) {
-			preparedStatement.setLong(1, id);
+                UnidadeFederativa uf = new UnidadeFederativa();
+                uf.setSigla(resultSet.getString("sigla_uf"));
+                uf.setNome(resultSet.getString("nome_uf"));
 
-			try (ResultSet resultSet = preparedStatement.executeQuery()) {
-				if (resultSet.next()) {
+                Cidade cidade = new Cidade();
+                cidade.setId(resultSet.getLong("id_cidade"));
+                cidade.setNome(resultSet.getString("cidade_nome"));
+                cidade.setUnidadeFederativa(uf);
 
-					UnidadeFederativa uf = new UnidadeFederativa();
-					uf.setSigla(resultSet.getString("sigla_uf"));
-					uf.setNome(resultSet.getString("nome_uf"));
+                TipoLogradouro tipoLogradouro = new TipoLogradouro();
+                tipoLogradouro.setSigla(resultSet.getString("sigla_tipo_logradouro"));
+                tipoLogradouro.setNome(resultSet.getString("nome_tipo_logradouro"));
 
-					Cidade cidade = new Cidade();
-					cidade.setId(resultSet.getLong("id_cidade"));
-					cidade.setNome(resultSet.getString("cidade_nome"));
-					cidade.setUnidadeFederativa(uf);
+                Logradouro logradouro = new Logradouro();
+                logradouro.setId(resultSet.getLong("id_logradouro"));
+                logradouro.setNome(resultSet.getString("logradouro_nome"));
+                logradouro.setTipoLogradouro(tipoLogradouro);
 
-					TipoLogradouro tipoLogradouro = new TipoLogradouro();
-					tipoLogradouro.setSigla(resultSet.getString("sigla_tipo_logradouro"));
-					tipoLogradouro.setNome(resultSet.getString("nome_tipo_logradouro"));
+                Bairro bairro = new Bairro();
+                bairro.setId(resultSet.getLong("id_bairro"));
+                bairro.setNome(resultSet.getString("bairro_nome"));
 
-					Logradouro logradouro = new Logradouro();
-					logradouro.setId(resultSet.getLong("id_logradouro"));
-					logradouro.setNome(resultSet.getString("logradouro_nome"));
-					logradouro.setTipoLogradouro(tipoLogradouro);
+                Endereco endereco = new Endereco();
+                endereco.setId(resultSet.getLong("id_endereco"));
+                endereco.setCep(resultSet.getString("cep"));
+                endereco.setCidade(cidade);
+                endereco.setLogradouro(logradouro);
+                endereco.setBairro(bairro);
 
-					Bairro bairro = new Bairro();
-					bairro.setId(resultSet.getLong("id_bairro"));
-					bairro.setNome(resultSet.getString("bairro_nome"));
+                return endereco;
+            }
+        }
+    }
 
-					Endereco endereco = new Endereco();
-					endereco.setId(resultSet.getLong("id_endereco"));
-					endereco.setCep(resultSet.getString("cep"));
-					endereco.setCidade(cidade);
-					endereco.setLogradouro(logradouro);
-					endereco.setBairro(bairro);
+    return null;
+}
 
-					return endereco;
-				}
-			}
-		}
+public List<Endereco> selecionarTodosEnderecos(Connection conexao) throws SQLException {
+    String sql = """
+                SELECT e.id_endereco, e.cep,
+                       c.id_cidade, c.nome AS cidade_nome,
+                       uf.sigla_uf, uf.nome_uf,
+                       l.id_logradouro, l.nome AS logradouro_nome,
+                       tl.sigla_tipo_logradouro, tl.nome_tipo_logradouro,
+                       b.id_bairro, b.nome AS bairro_nome
+                FROM endereco e
+                JOIN cidade c ON e.id_cidade = c.id_cidade
+                JOIN unidade_federativa uf ON c.sigla_uf = uf.sigla_uf
+                JOIN logradouro l ON e.id_logradouro = l.id_logradouro
+                JOIN tipo_logradouro tl ON l.sigla_tipo_logradouro = tl.sigla_tipo_logradouro
+                JOIN bairro b ON e.id_bairro = b.id_bairro;
+            """;
 
-		return null;
-	}
+    List<Endereco> enderecos = new ArrayList<>();
 
-	public List<Endereco> selecionarTodosEnderecos(Connection conexao) throws SQLException {
-		String sql = """
-        SELECT e.id_endereco, e.cep,
-               c.id_cidade, c.nome AS cidade_nome,
-               uf.sigla_uf, uf.nome_uf,
-               l.id_logradouro, l.nome AS logradouro_nome,
-               tl.sigla_tipo_logradouro, tl.nome_tipo_logradouro,
-               b.id_bairro, b.nome AS bairro_nome
-        FROM endereco e
-        JOIN cidade c ON e.id_cidade = c.id_cidade
-        JOIN unidade_federativa uf ON c.sigla_uf = uf.sigla_uf
-        JOIN logradouro l ON e.id_logradouro = l.id_logradouro
-        JOIN tipo_logradouro tl ON l.sigla_tipo_logradouro = tl.sigla_tipo_logradouro
-        JOIN bairro b ON e.id_bairro = b.id_bairro;
-    """;
+    try (PreparedStatement preparedStatement = conexao.prepareStatement(sql);
+         ResultSet resultSet = preparedStatement.executeQuery()) {
 
-		List<Endereco> enderecos = new ArrayList<>();
+        while (resultSet.next()) {
 
-		try (PreparedStatement preparedStatement = conexao.prepareStatement(sql);
-			 ResultSet resultSet = preparedStatement.executeQuery()) {
+            UnidadeFederativa uf = new UnidadeFederativa();
+            uf.setSigla(resultSet.getString("uf_sigla"));
+            uf.setNome(resultSet.getString("uf_nome"));
 
-			while (resultSet.next()) {
+            Cidade cidade = new Cidade();
+            cidade.setId(resultSet.getLong("id_cidade"));
+            cidade.setNome(resultSet.getString("cidade_nome"));
+            cidade.setUnidadeFederativa(uf);
 
-				UnidadeFederativa uf = new UnidadeFederativa();
-				uf.setSigla(resultSet.getString("uf_sigla"));
-				uf.setNome(resultSet.getString("uf_nome"));
+            TipoLogradouro tipoLogradouro = new TipoLogradouro();
+            tipoLogradouro.setSigla(resultSet.getString("sigla_tipo_logradouro"));
+            tipoLogradouro.setNome(resultSet.getString("nome_tipo_logradouro"));
 
-				Cidade cidade = new Cidade();
-				cidade.setId(resultSet.getLong("id_cidade"));
-				cidade.setNome(resultSet.getString("cidade_nome"));
-				cidade.setUnidadeFederativa(uf);
+            Logradouro logradouro = new Logradouro();
+            logradouro.setId(resultSet.getLong("id_logradouro"));
+            logradouro.setNome(resultSet.getString("logradouro_nome"));
+            logradouro.setTipoLogradouro(tipoLogradouro);
 
-				TipoLogradouro tipoLogradouro = new TipoLogradouro();
-				tipoLogradouro.setSigla(resultSet.getString("sigla_tipo_logradouro"));
-				tipoLogradouro.setNome(resultSet.getString("nome_tipo_logradouro"));
+            Bairro bairro = new Bairro();
+            bairro.setId(resultSet.getLong("id_bairro"));
+            bairro.setNome(resultSet.getString("bairro_nome"));
 
-				Logradouro logradouro = new Logradouro();
-				logradouro.setId(resultSet.getLong("id_logradouro"));
-				logradouro.setNome(resultSet.getString("logradouro_nome"));
-				logradouro.setTipoLogradouro(tipoLogradouro);
+            Endereco endereco = new Endereco();
+            endereco.setId(resultSet.getLong("id_endereco"));
+            endereco.setCep(resultSet.getString("cep"));
+            endereco.setCidade(cidade);
+            endereco.setLogradouro(logradouro);
+            endereco.setBairro(bairro);
 
-				Bairro bairro = new Bairro();
-				bairro.setId(resultSet.getLong("id_bairro"));
-				bairro.setNome(resultSet.getString("bairro_nome"));
+            enderecos.add(endereco);
+        }
+    }
 
-				Endereco endereco = new Endereco();
-				endereco.setId(resultSet.getLong("id_endereco"));
-				endereco.setCep(resultSet.getString("cep"));
-				endereco.setCidade(cidade);
-				endereco.setLogradouro(logradouro);
-				endereco.setBairro(bairro);
-
-				enderecos.add(endereco);
-			}
-		}
-
-		return enderecos;
-	}
+    return enderecos;
+}
 }

@@ -20,12 +20,10 @@ public class UCEnderecoGeralServicos {
 
     private EnderecoCOL enderecoCOL;
     private CidadeCOL cidadeCOL;
-
     private LogradouroCOL logradouroCOL;
     private BairroCOL bairroCOL;
     private EnderecoDAO enderecoDAO;
     private CidadeDAO cidadeDAO;
-
     private LogradouroDAO logradouroDAO;
     private BairroDAO bairroDAO;
     private UnidadeFederativaDAO unidadeFederativaDAO;
@@ -54,15 +52,15 @@ public class UCEnderecoGeralServicos {
         try (Connection conexao = new ConexaoBD().getConexaoComBD()) {
             conexao.setAutoCommit(false);
 
-            if(cidadeCOL.cidadeValida(endereco.getCidade()) || cidadeDAO.selecionarCidadePorId(endereco.getCidade().getId(), conexao) == null) {
+            if (!cidadeCOL.cidadeValida(endereco.getCidade()) || cidadeDAO.selecionarCidadePorId(endereco.getCidade().getId(), conexao) == null) {
                 throw new EnderecoException("Cidade inválida.");
             }
 
-            if(!bairroCOL.bairroValido(endereco.getBairro()) || bairroDAO.selecionarBairroPorId(endereco.getBairro().getId(), conexao) == null) {
+            if (!bairroCOL.bairroValido(endereco.getBairro()) || bairroDAO.selecionarBairroPorId(endereco.getBairro().getId(), conexao) == null) {
                 throw new EnderecoException("Bairro inválido.");
             }
 
-            if(!logradouroCOL.logradouroValido(endereco.getLogradouro()) || logradouroDAO.selecionarLogradouroPorId(endereco.getLogradouro().getId(), conexao) == null) {
+            if (!logradouroCOL.logradouroValido(endereco.getLogradouro()) || logradouroDAO.selecionarLogradouroPorId(endereco.getLogradouro().getId(), conexao) == null) {
                 throw new EnderecoException("Logradouro inválido.");
             }
 
@@ -108,7 +106,7 @@ public class UCEnderecoGeralServicos {
             throw new EnderecoException("Id do endereço inválido " + id + ".");
         }
 
-        try(Connection conexao = new ConexaoBD().getConexaoComBD()) {
+        try (Connection conexao = new ConexaoBD().getConexaoComBD()) {
             conexao.setAutoCommit(false);
 
             Endereco endereco;
@@ -143,7 +141,7 @@ public class UCEnderecoGeralServicos {
             throw new EnderecoException("ID da cidade inválido (" + id + ")");
         }
 
-        try(Connection conexao = new ConexaoBD().getConexaoComBD()) {
+        try (Connection conexao = new ConexaoBD().getConexaoComBD()) {
             conexao.setAutoCommit(false);
             Cidade cidade;
 
@@ -160,9 +158,9 @@ public class UCEnderecoGeralServicos {
     }
 
     public List<Endereco> obterListaDeEnderecos() throws Exception {
-        List<Endereco> enderecos =  new ArrayList<>();
+        List<Endereco> enderecos = new ArrayList<>();
 
-        try(Connection conexao = new ConexaoBD().getConexaoComBD()) {
+        try (Connection conexao = new ConexaoBD().getConexaoComBD()) {
             conexao.setAutoCommit(false);
 
             try {
@@ -351,8 +349,43 @@ public class UCEnderecoGeralServicos {
         }
 
         System.out.println("\n==== Teste finalizado ====");
+
+
+        System.out.println("\n==== Teste: cadastrarEndereco ====");
+        try {
+            // Busca cidade, logradouro e bairro existentes para usar no cadastro
+            Cidade cidade = servicos.obterCidade(1L); // ID existente no banco
+            Logradouro logradouro = servicos.obterListaDeLogradouros().get(0); // Primeiro logradouro existente
+            Bairro bairro = servicos.obterListaDeBairros().get(0); // Primeiro bairro existente
+
+            if (cidade == null || logradouro == null || bairro == null) {
+                throw new Exception("Cidade, logradouro ou bairro não encontrados para o cadastro.");
+            }
+
+            // Monta o novo endereço
+            Endereco novoEndereco = new Endereco();
+            novoEndereco.setCep("99999999"); // CEP de teste
+            novoEndereco.setCidade(cidade);
+            novoEndereco.setLogradouro(logradouro);
+            novoEndereco.setBairro(bairro);
+
+            // Cadastra o novo endereço
+            Endereco enderecoCadastrado = servicos.cadastrarEndereco(novoEndereco);
+
+            if (enderecoCadastrado != null) {
+                System.out.println("Endereço cadastrado com sucesso!");
+                System.out.println("ID: " + enderecoCadastrado.getId());
+                System.out.println("CEP: " + enderecoCadastrado.getCep());
+                System.out.println("Cidade: " + enderecoCadastrado.getCidade().getNome() + " | UF: " + enderecoCadastrado.getCidade().getUnidadeFederativa().getSigla());
+                System.out.println("Logradouro: " + enderecoCadastrado.getLogradouro().getNome());
+                System.out.println("Bairro: " + enderecoCadastrado.getBairro().getNome());
+            } else {
+                System.out.println("Falha ao cadastrar o endereço.");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Erro ao cadastrar endereço: " + e.getMessage());
+        }
+
     }
-
-
-
 }
